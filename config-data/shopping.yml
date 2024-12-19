@@ -9,7 +9,7 @@ server:
 # Enabling H2 Console
 spring:
   application:
-    name: products
+    name: shopping
   h2:
     console:
       enabled: true
