@@ -1,5 +1,6 @@
 package bored.juan.microservices.shopping.entity;
 
+import bored.juan.microservices.shopping.model.Customer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
@@ -26,6 +27,9 @@ public class Invoice {
 
     @Column(name = "customer_id")
     private Long customerId;
+
+    @Transient
+    private Customer customer;
 
     @Column(name = "create_at")
     @Temporal(TemporalType.DATE)

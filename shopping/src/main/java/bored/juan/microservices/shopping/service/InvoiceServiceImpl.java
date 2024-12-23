@@ -1,7 +1,10 @@
 package bored.juan.microservices.shopping.service;
 
+import bored.juan.microservices.shopping.client.CustomerClient;
+import bored.juan.microservices.shopping.client.ProductClient;
 import bored.juan.microservices.shopping.entity.Invoice;
-import bored.juan.microservices.shopping.repository.InvoiceItemsRepository;
+import bored.juan.microservices.shopping.model.Customer;
+import bored.juan.microservices.shopping.model.Product;
 import bored.juan.microservices.shopping.repository.InvoiceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +16,18 @@ import java.util.List;
 @Service
 public class InvoiceServiceImpl implements InvoiceService {
 
-    @Autowired
-    InvoiceRepository invoiceRepository;
+    private final CustomerClient customerClient;
+    private final ProductClient productClient;
+    private final InvoiceRepository invoiceRepository;
 
     @Autowired
-    InvoiceItemsRepository invoiceItemsRepository;
+    public InvoiceServiceImpl(CustomerClient customerClient,
+                              ProductClient productClient,
+                              InvoiceRepository invoiceRepository) {
+        this.customerClient = customerClient;
+        this.productClient = productClient;
+        this.invoiceRepository = invoiceRepository;
+    }
 
     @Override
     public List<Invoice> findInvoiceAll() {
@@ -32,6 +42,8 @@ public class InvoiceServiceImpl implements InvoiceService {
             return invoiceDB;
         }
         invoice.setState("CREATED");
+        invoiceDB = invoiceRepository.save(invoice);
+        invoiceDB.getItems().forEach(item -> productClient.updateStock(item.getProductId(), item.getQuantity() * -1));
         return invoiceRepository.save(invoice);
     }
 
@@ -63,6 +75,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public Invoice getInvoice(Long id) {
-        return invoiceRepository.findById(id).orElse(null);
+        Invoice invoice = invoiceRepository.findById(id).orElse(null);
+        if (invoice != null) {
+            Customer customer = customerClient.getCustomer(invoice.getCustomerId()).getBody();
+            invoice.setCustomer(customer);
+            invoice.getItems().forEach(item -> {
+                Product product = productClient.getProduct(item.getProductId()).getBody();
+                item.setProduct(product);
+            });
+        }
+        return invoice;
     }
 }
