@@ -2,8 +2,10 @@ package bored.juan.microservices.shopping.client;
 
 import bored.juan.microservices.shopping.model.Customer;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
-public class CustomerHystrixFallbackFactory implements CustomerClient {
+@Component
+public class CustomerFallbackFactory implements CustomerClient {
 
     @Override
     public ResponseEntity<Customer> getCustomer(Long id) {

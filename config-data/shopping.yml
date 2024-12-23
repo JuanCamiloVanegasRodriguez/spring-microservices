@@ -47,9 +47,19 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8099/eureka/
 
-Feign: # This is for Hystrix
-  hystrix:
+feign: # This is for Feign 
+  circuitBreaker:
     enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      customers:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+
 management: # This is for actuator
   endpoints:
     web:
